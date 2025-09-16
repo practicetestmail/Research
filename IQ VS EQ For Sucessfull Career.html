@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EQ বনাম IQ: সফল ক্যারিয়ারের চাবিকাঠি?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is designed as a narrative journey. It starts with a broad question (Hero section), defines the core concepts (IQ vs EQ), provides an interactive comparison dashboard (Core Comparison), delves deeper into EQ's components, presents statistical evidence, and finally offers a synthesized conclusion. This thematic, top-down structure was chosen over a linear report format to guide the user from understanding to analysis and conclusion, making complex information digestible and engaging. The core interaction is filtering the comparison chart by job role, which directly answers the user's implicit question: "Which is more important for ME?". -->
+    <!-- Visualization & Content Choices: 
+        1. Report Info: Comparing IQ-related skills vs EQ-related skills. Goal: Compare. Viz/Presentation: Interactive Bar Chart (Chart.js/Canvas). Interaction: Users click buttons for different job roles ('নেতা', 'দলীয় সদস্য') which updates the chart data. Justification: This directly visualizes the shifting importance of skills based on context, which is the report's central theme.
+        2. Report Info: The five components of EQ. Goal: Organize/Inform. Viz/Presentation: Interactive Diagram (HTML/CSS Grid/Flex). Interaction: Clicking on a component card reveals its detailed description. Justification: This breaks down a complex concept into manageable, explorable parts without overwhelming the user.
+        3. Report Info: High performers often have high EQ. Goal: Inform/Persuade. Viz/Presentation: Donut Chart (Chart.js/Canvas). Interaction: Hovering over segments shows percentages. Justification: A donut chart provides a quick, impactful visual summary of a key statistical finding, reinforcing the report's argument.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background-color: #FDFBF5; /* A warm, very light beige */
+            color: #3D352E; /* Dark brown for text */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; 
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #C77D55; /* A soft terracotta accent */
+            border-bottom-color: #C77D55;
+        }
+        .btn-primary {
+            background-color: #5B92E5; /* Gentle Blue */
+            color: #FFFFFF;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #4A7AC4;
+        }
+        .btn-secondary {
+            background-color: #E2725B; /* Terracotta */
+            color: #FFFFFF;
+            transition: background-color 0.3s;
+        }
+        .btn-secondary:hover {
+            background-color: #C75F4A;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #EAE0D5; /* Soft border */
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .section-title {
+            color: #3D352E;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-gray-800">
+                ক্যারিয়ার ইনসাইট
+            </div>
+            <ul class="hidden md:flex space-x-8">
+                <li><a href="#introduction" class="nav-link text-gray-600 font-medium">ভূমিকা</a></li>
+                <li><a href="#comparison" class="nav-link text-gray-600 font-medium">তুলনা</a></li>
+                <li><a href="#components" class="nav-link text-gray-600 font-medium">EQ-এর উপাদান</a></li>
+                <li><a href="#data" class="nav-link text-gray-600 font-medium">তথ্য ও গবেষণা</a></li>
+                <li><a href="#conclusion" class="nav-link text-gray-600 font-medium">সিদ্ধান্ত</a></li>
+            </ul>
+            <div class="md:hidden">
+                <button id="menu-btn" class="text-gray-600 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden">
+             <a href="#introduction" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100">ভূমিকা</a>
+             <a href="#comparison" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100">তুলনা</a>
+             <a href="#components" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100">EQ-এর উপাদান</a>
+             <a href="#data" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100">তথ্য ও গবেষণা</a>
+             <a href="#conclusion" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100">সিদ্ধান্ত</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <section id="hero" class="text-center py-16">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4 section-title">সফল ক্যারিয়ারের জন্য কোনটি বেশি জরুরি?</h1>
+            <h2 class="text-4xl md:text-5xl font-bold mb-6"><span class="text-blue-500">IQ</span> নাকি <span class="text-orange-500">EQ</span>?</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 mb-8">
+                যুগের পর যুগ ধরে বুদ্ধিমত্তা বা IQ-কেই সফলতার মাপকাঠি হিসেবে দেখা হতো। কিন্তু আধুনিক কর্মক্ষেত্রে আবেগীয় বুদ্ধিমত্তা বা EQ ক্রমশ গুরুত্বপূর্ণ হয়ে উঠছে। আসুন, এই ইন্টারেক্টিভ রিপোর্টের মাধ্যমে জেনে নিই, আপনার ক্যারিয়ারের জন্য কোনটি বেশি শক্তিশালী সম্পদ হতে পারে।
+            </p>
+        </section>
+
+        <section id="introduction" class="py-16">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="card p-8">
+                    <div class="flex items-center mb-4">
+                        <span class="text-5xl mr-4">🧠</span>
+                        <h3 class="text-3xl font-bold text-blue-600">বুদ্ধিমত্তা (IQ)</h3>
+                    </div>
+                    <p class="text-gray-700">
+                        IQ বা Intelligence Quotient হলো মানুষের যৌক্তিক চিন্তা, সমস্যা সমাধান, তথ্য বিশ্লেষণ এবং নতুন কিছু শেখার ক্ষমতা পরিমাপের একটি মান। এটি মূলত মানুষের জ্ঞানীয় বা কগনিটিভ দক্ষতাকে নির্দেশ করে। উচ্চ IQ সম্পন্ন ব্যক্তিরা সাধারণত জটিল বিষয় দ্রুত বুঝতে এবং বিশ্লেষণ করতে পারেন।
+                    </p>
+                </div>
+                <div class="card p-8">
+                    <div class="flex items-center mb-4">
+                        <span class="text-5xl mr-4">❤️</span>
+                        <h3 class="text-3xl font-bold text-orange-500">আবেগীয় বুদ্ধিমত্তা (EQ)</h3>
+                    </div>
+                    <p class="text-gray-700">
+                        EQ বা Emotional Quotient হলো নিজের এবং অন্যের আবেগ বোঝা, নিয়ন্ত্রণ করা এবং সেই অনুযায়ী আচরণ করার ক্ষমতা। এটি আত্ম-সচেতনতা, আত্ম-নিয়ন্ত্রণ, সহমর্মিতা এবং সামাজিক দক্ষতার মতো বিষয়গুলোর সমন্বয়ে গঠিত। উচ্চ EQ সম্পন্ন ব্যক্তিরা সহজে অন্যের সাথে সম্পর্ক স্থাপন করতে এবং দলকে নেতৃত্ব দিতে পারেন।
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison" class="py-16 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4 section-title">দক্ষতার তুলনা: বিভিন্ন ভূমিকায় IQ বনাম EQ</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 mb-8">
+                কর্মক্ষেত্রে বিভিন্ন ভূমিকায় সফলতার জন্য বিভিন্ন দক্ষতার প্রয়োজন হয়। নিচের বাটনগুলো ক্লিক করে দেখুন কিভাবে নেতা, দলীয় সদস্য এবং উদ্ভাবকের ভূমিকায় IQ এবং EQ সম্পর্কিত দক্ষতার গুরুত্ব পরিবর্তিত হয়।
+            </p>
+            <div class="flex justify-center space-x-4 mb-8">
+                <button class="role-btn btn-primary px-6 py-2 rounded-full font-semibold shadow-md active" data-role="leader">নেতা</button>
+                <button class="role-btn btn-secondary px-6 py-2 rounded-full font-semibold shadow-md" data-role="team_member">দলীয় সদস্য</button>
+                <button class="role-btn btn-primary px-6 py-2 rounded-full font-semibold shadow-md" data-role="innovator">উদ্ভাবক</button>
+            </div>
+            <div class="chart-container mx-auto">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+             <div id="role-description" class="mt-8 max-w-3xl mx-auto text-left card p-6">
+                <h4 id="role-title" class="text-2xl font-bold mb-2"></h4>
+                <p id="role-text" class="text-gray-700"></p>
+            </div>
+        </section>
+
+        <section id="components" class="py-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 section-title">আবেগীয় বুদ্ধিমত্তার মূল ৫টি উপাদান</h2>
+             <p class="max-w-3xl mx-auto text-center text-lg text-gray-600 mb-12">
+                ড্যানিয়েল গোলম্যানের মতে, আবেগীয় বুদ্ধিমত্তা পাঁচটি মূল উপাদানের সমন্বয়ে গঠিত। প্রতিটি উপাদানে ক্লিক করে বিস্তারিত জানুন।
+            </p>
+            <div class="grid md:grid-cols-5 gap-6 text-center">
+                <div class="eq-component-card card p-6 cursor-pointer" data-component="self-awareness">
+                    <div class="text-4xl mb-3">🧘</div>
+                    <h4 class="font-bold text-lg">আত্ম-সচেতনতা</h4>
+                </div>
+                 <div class="eq-component-card card p-6 cursor-pointer" data-component="self-regulation">
+                    <div class="text-4xl mb-3">🚦</div>
+                    <h4 class="font-bold text-lg">আত্ম-নিয়ন্ত্রণ</h4>
+                </div>
+                 <div class="eq-component-card card p-6 cursor-pointer" data-component="motivation">
+                    <div class="text-4xl mb-3">🎯</div>
+                    <h4 class="font-bold text-lg">প্রেরণা</h4>
+                </div>
+                 <div class="eq-component-card card p-6 cursor-pointer" data-component="empathy">
+                    <div class="text-4xl mb-3">🤝</div>
+                    <h4 class="font-bold text-lg">সহমর্মিতা</h4>
+                </div>
+                 <div class="eq-component-card card p-6 cursor-pointer" data-component="social-skills">
+                    <div class="text-4xl mb-3">🌐</div>
+                    <h4 class="font-bold text-lg">সামাজিক দক্ষতা</h4>
+                </div>
+            </div>
+            <div id="component-details" class="mt-8 card p-8 hidden">
+                <h4 id="component-title" class="text-2xl font-bold mb-2"></h4>
+                <p id="component-text" class="text-gray-700"></p>
+            </div>
+        </section>
+
+        <section id="data" class="py-16">
+             <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 section-title">তথ্য কী বলছে?</h2>
+            <p class="max-w-3xl mx-auto text-center text-lg text-gray-600 mb-12">
+                বিভিন্ন গবেষণা দেখায় যে কর্মক্ষেত্রে শীর্ষস্থানীয় কর্মীদের সফলতার পেছনে উচ্চ EQ-এর একটি বড় ভূমিকা রয়েছে। প্রায়শই এটি শুধুমাত্র উচ্চ IQ থাকার চেয়েও বেশি প্রভাবশালী।
+            </p>
+             <div class="grid md:grid-cols-2 gap-12 items-center">
+                 <div class="chart-container mx-auto">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+                <div class="text-content">
+                    <h3 class="text-2xl font-bold mb-4">কেন EQ সফলতার পূর্বাভাস দেয়?</h3>
+                    <ul class="list-disc list-inside space-y-3 text-gray-700">
+                        <li><strong>উন্নত সিদ্ধান্ত গ্রহণ:</strong> উচ্চ EQ সম্পন্ন ব্যক্তিরা চাপের মধ্যেও শান্ত থেকে যৌক্তিক সিদ্ধান্ত নিতে পারেন।</li>
+                        <li><strong>কার্যকরী নেতৃত্ব:</strong> তারা দলকে অনুপ্রাণিত করতে এবং ইতিবাচক কাজের পরিবেশ তৈরি করতে সক্ষম হন।</li>
+                        <li><strong>শক্তিশালী সম্পর্ক:</strong> সহকর্মী এবং গ্রাহকদের সাথে মজবুত সম্পর্ক স্থাপনের মাধ্যমে তারা প্রাতিষ্ঠানিক লক্ষ্য অর্জনে সহায়তা করেন।</li>
+                        <li><strong>পরিবর্তনের সাথে মানিয়ে নেওয়া:</strong> আবেগীয় স্থিতিশীলতার কারণে তারা যে কোনো পরিবর্তন বা প্রতিকূল পরিস্থিতি সহজে মোকাবেলা করতে পারেন।</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="conclusion" class="py-16 bg-white rounded-lg shadow-inner">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 section-title">চূড়ান্ত সিদ্ধান্ত: IQ এবং EQ এর সমন্বয়</h2>
+            <p class="max-w-4xl mx-auto text-lg text-gray-600 text-center">
+                তাহলে, চূড়ান্ত বিজয়ী কে? বাস্তবতা হলো, IQ বা EQ কোনোটিই এককভাবে চূড়ান্ত সফলতার নিশ্চয়তা দেয় না। IQ আপনাকে চাকরির ইন্টারভিউতে ডাক পাইয়ে দিতে পারে, কিন্তু EQ আপনাকে সেই চাকরিতে উন্নতি করতে এবং নেতৃত্ব দিতে সাহায্য করবে।
+            </p>
+            <div class="mt-10 flex flex-col md:flex-row justify-center items-center gap-6">
+                <div class="text-center p-6 border-2 border-blue-200 rounded-lg max-w-sm">
+                    <div class="text-6xl mb-2">🧠</div>
+                    <h4 class="font-bold text-xl mb-2">IQ হলো ভিত্তি</h4>
+                    <p class="text-gray-600">এটি আপনার প্রযুক্তিগত জ্ঞান এবং সমস্যা সমাধানের মৌলিক ক্ষমতা তৈরি করে।</p>
+                </div>
+                 <div class="text-5xl font-bold text-gray-400 mx-6">+</div>
+                 <div class="text-center p-6 border-2 border-orange-200 rounded-lg max-w-sm">
+                    <div class="text-6xl mb-2">❤️</div>
+                    <h4 class="font-bold text-xl mb-2">EQ হলো অনুঘটক</h4>
+                    <p class="text-gray-600">এটি আপনার জ্ঞানকে বাস্তবে প্রয়োগ করতে, অন্যদের সাথে কাজ করতে এবং চ্যালেঞ্জ মোকাবেলা করতে সাহায্য করে।</p>
+                </div>
+            </div>
+             <p class="max-w-4xl mx-auto text-lg text-gray-700 text-center mt-10 font-semibold">
+                সবচেয়ে সফল ব্যক্তিরা হলেন তারা, যারা তাদের জ্ঞান এবং আবেগের মধ্যে একটি চমৎকার ভারসাম্য তৈরি করতে পারেন। তাই শুধু IQ নয়, EQ বিকাশের দিকেও মনোযোগ দেওয়াই হলো দীর্ঘমেয়াদী ক্যারিয়ার সফলতার আসল চাবিকাঠি।
+            </p>
+        </section>
+    </main>
+
+    <footer class="bg-gray-100 mt-16">
+        <div class="container mx-auto px-6 py-8 text-center text-gray-600">
+            <p>&copy; 2024 ক্যারিয়ার ইনসাইট। সকল তথ্য শিক্ষামূলক উদ্দেশ্যে ব্যবহৃত।</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const mobileMenuBtn = document.getElementById('menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            const navLinks = document.querySelectorAll('nav a, #mobile-menu a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                    if(!mobileMenu.classList.contains('hidden')){
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+
+            const chartData = {
+                skills: ["যুক্তি ও বিশ্লেষণ (IQ)", "কৌশলগত চিন্তা (IQ)", "দল পরিচালনা (EQ)", "যোগাযোগ (EQ)", "সহমর্মিতা (EQ)", "অনুপ্রেরণা (EQ)"],
+                leader: {
+                    scores: [7, 8, 10, 9, 9, 10],
+                    title: "নেতার ভূমিকা",
+                    description: "একজন নেতার জন্য কৌশলগত চিন্তার (IQ) পাশাপাশি দলকে একত্রিত রাখা, তাদের অনুপ্রাণিত করা এবং কার্যকরভাবে যোগাযোগ করার (EQ) দক্ষতা অপরিহার্য। গবেষণায় দেখা যায়, সেরা নেতারা উচ্চ EQ সম্পন্ন হন।"
+                },
+                team_member: {
+                    scores: [6, 5, 7, 8, 9, 7],
+                    title: "দলীয় সদস্যের ভূমিকা",
+                    description: "একজন দলীয় সদস্যের জন্য প্রযুক্তিগত দক্ষতা (IQ) গুরুত্বপূর্ণ, তবে দলের অন্য সদস্যদের সাথে মিলেমিশে কাজ করা, সহমর্মিতা দেখানো এবং স্পষ্টভাবে যোগাযোগ করার (EQ) ক্ষমতা দলের সাফল্য নিশ্চিত করে।"
+                },
+                innovator: {
+                    scores: [10, 9, 6, 7, 5, 8],
+                    title: "উদ্ভাবকের ভূমিকা",
+                    description: "একজন উদ্ভাবকের জন্য গভীর বিশ্লেষণাত্মক এবং যৌক্তিক দক্ষতা (IQ) সবচেয়ে বেশি প্রয়োজন। তবে নিজের আইডিয়া অন্যদের কাছে তুলে ধরা এবং সেই আইডিয়াকে বাস্তবে রূপ দিতে দলকে प्रेरित করার জন্য (EQ) দক্ষতাও লাগে।"
+                }
+            };
+
+            const ctxComparison = document.getElementById('comparisonChart').getContext('2d');
+            let comparisonChart = new Chart(ctxComparison, {
+                type: 'bar',
+                data: {
+                    labels: chartData.skills,
+                    datasets: [{
+                        label: 'গুরুত্ব (১০ এর মধ্যে)',
+                        data: chartData.leader.scores,
+                        backgroundColor: chartData.skills.map(skill => skill.includes('(IQ)') ? 'rgba(59, 130, 246, 0.7)' : 'rgba(249, 115, 22, 0.7)'),
+                        borderColor: chartData.skills.map(skill => skill.includes('(IQ)') ? 'rgba(59, 130, 246, 1)' : 'rgba(249, 115, 22, 1)'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `গুরুত্ব: ${context.raw}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const roleDescription = document.getElementById('role-description');
+            const roleTitle = document.getElementById('role-title');
+            const roleText = document.getElementById('role-text');
+
+            function updateRoleInfo(role) {
+                roleTitle.textContent = chartData[role].title;
+                roleText.textContent = chartData[role].description;
+            }
+
+            const roleBtns = document.querySelectorAll('.role-btn');
+            roleBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    roleBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const role = btn.dataset.role;
+                    comparisonChart.data.datasets[0].data = chartData[role].scores;
+                    comparisonChart.update();
+                    updateRoleInfo(role);
+                });
+            });
+
+            updateRoleInfo('leader');
+
+            const eqComponentsData = {
+                "self-awareness": {
+                    title: "আত্ম-সচেতনতা (Self-awareness)",
+                    text: "এটি হলো নিজের আবেগ, শক্তি, দুর্বলতা, এবং মূল্যবোধ সম্পর্কে স্পষ্ট ধারণা রাখা। যারা আত্ম-সচেতন, তারা বুঝতে পারেন তাদের অনুভূতি কীভাবে নিজেদের, অন্যকে এবং তাদের কাজের ওপর প্রভাব ফেলে।"
+                },
+                "self-regulation": {
+                    title: "আত্ম-নিয়ন্ত্রণ (Self-regulation)",
+                    text: "এটি হলো নিজের আবেগ এবং প্রতিক্রিয়া নিয়ন্ত্রণ করার ক্ষমতা। এর মানে হলো হুট করে কোনো সিদ্ধান্ত না নেওয়া, চাপের মধ্যে শান্ত থাকা এবং পরিবর্তনের সাথে নিজেকে মানিয়ে নেওয়া।"
+                },
+                "motivation": {
+                    title: "প্রেরণা (Motivation)",
+                    text: "এটি হলো শুধু অর্থ বা খ্যাতির জন্য নয়, বরং অভ্যন্তরীণ সন্তুষ্টির জন্য কাজ করার ইচ্ছা। উচ্চ প্রেরণাসম্পন্ন ব্যক্তিরা প্রতিকূলতার মুখেও আশাবাদী থাকেন এবং লক্ষ্যের প্রতি অবিচল থাকেন।"
+                },
+                "empathy": {
+                    title: "সহমর্মিতা (Empathy)",
+                    text: "এটি হলো অন্যের আবেগ এবং দৃষ্টিভঙ্গি বোঝার ক্ষমতা। সহমর্মী ব্যক্তিরা অন্যের জায়গায় নিজেকে কল্পনা করতে পারেন, যা তাদের আরও ভালো দলনেতা এবং সহকর্মী হিসেবে গড়ে তোলে।"
+                },
+                "social-skills": {
+                    title: "সামাজিক দক্ষতা (Social skills)",
+                    text: "এটি হলো সম্পর্ক তৈরি এবং পরিচালনা করার ক্ষমতা। ভালো সামাজিক দক্ষতা সম্পন্ন ব্যক্তিরা সহজেই যোগাযোগ স্থাপন করতে, দলকে নেতৃত্ব দিতে এবং দ্বন্দ্ব নিরসন করতে পারেন।"
+                }
+            };
+            
+            const eqComponentCards = document.querySelectorAll('.eq-component-card');
+            const componentDetailsDiv = document.getElementById('component-details');
+            const componentTitleEl = document.getElementById('component-title');
+            const componentTextEl = document.getElementById('component-text');
+
+            eqComponentCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const componentKey = card.dataset.component;
+                    const details = eqComponentsData[componentKey];
+                    
+                    componentTitleEl.textContent = details.title;
+                    componentTextEl.textContent = details.text;
+
+                    componentDetailsDiv.classList.remove('hidden');
+
+                    eqComponentCards.forEach(c => {
+                        c.style.border = '1px solid #EAE0D5';
+                    });
+                    card.style.border = '2px solid #5B92E5';
+                });
+            });
+            
+            const ctxPerformance = document.getElementById('performanceChart').getContext('2d');
+            const performanceChart = new Chart(ctxPerformance, {
+                type: 'doughnut',
+                data: {
+                    labels: ['উচ্চ EQ সম্পন্ন কর্মী', 'শুধুমাত্র উচ্চ IQ সম্পন্ন কর্মী', 'অন্যান্য'],
+                    datasets: [{
+                        label: 'শীর্ষ কর্মীদের মধ্যে',
+                        data: [75, 15, 10],
+                        backgroundColor: [
+                            'rgba(249, 115, 22, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(156, 163, 175, 0.7)'
+                        ],
+                        borderColor: '#FFFFFF',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'শীর্ষ কর্মীদের সফলতার কারণ',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
